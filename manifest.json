@@ -1,0 +1,28 @@
+{
+  "name": "AG Farmedge Global",
+  "short_name": "Farmedge",
+  "description": "Business management for AG Farmedge Global — purchases, sales, payments and reports",
+  "start_url": "/agfarmedge/",
+  "scope": "/agfarmedge/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07071a",
+  "theme_color": "#07071a",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23e8533a'/><text y='.85em' font-size='140' x='20'>🌿</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%23e8533a'/><text y='.85em' font-size='380' x='50'>🌿</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "finance"],
+  "screenshots": []
+}
