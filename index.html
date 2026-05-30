@@ -414,12 +414,12 @@ body.nav-right.nav-pill .nav-item.active{
 .pin-forgot{margin-top:20px;font-size:11px;color:var(--faint);cursor:pointer;text-decoration:underline}
 
 /* PWA INSTALL BANNER */
-.pwa-banner{position:fixed;bottom:calc(var(--nav-height) + 10px);left:12px;right:12px;background:var(--card);border:1px solid var(--borderL);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px;z-index:500;box-shadow:0 4px 24px #00000060;transform:translateY(120%);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
-.pwa-banner.show{transform:translateY(0)}
-.pwa-banner-icon{font-size:28px;flex-shrink:0}
+.pwa-banner{position:fixed;bottom:calc(var(--nav-height) + 10px);left:12px;right:12px;background:var(--card);border:1px solid var(--borderL);border-radius:var(--radius);padding:10px 12px;display:flex;align-items:center;gap:10px;z-index:500;box-shadow:0 4px 24px #00000060;transform:translateY(120%);transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.pwa-banner.show{transform:translateY(0);pointer-events:all}
+.pwa-banner-icon{font-size:22px;flex-shrink:0}
 .pwa-banner-text{flex:1;min-width:0}
-.pwa-banner-title{font-size:13px;font-weight:700;color:var(--white)}
-.pwa-banner-sub{font-size:11px;color:var(--dim);margin-top:2px}
+.pwa-banner-title{font-size:12px;font-weight:700;color:var(--white)}
+.pwa-banner-sub{font-size:10px;color:var(--dim);margin-top:1px}
 .pwa-banner-btns{display:flex;gap:6px;flex-shrink:0}
 
 /* OFFLINE BANNER */
@@ -2689,29 +2689,42 @@ if ('serviceWorker' in navigator) {
 
 // Capture the install prompt
 let _pwaInstallPrompt = null;
+let _pwaDismissTimer = null;
+
+function showPwaBanner() {
+  const banner = document.getElementById('pwaBanner');
+  if (!banner) return;
+  // Don't show if user already dismissed this session
+  if (sessionStorage.getItem('pwa_dismissed')) return;
+  banner.classList.add('show');
+  // Auto-hide after 8 seconds so it never blocks the app
+  _pwaDismissTimer = setTimeout(dismissPwaBanner, 8000);
+}
+
+function dismissPwaBanner() {
+  clearTimeout(_pwaDismissTimer);
+  const banner = document.getElementById('pwaBanner');
+  if (banner) banner.classList.remove('show');
+  sessionStorage.setItem('pwa_dismissed', '1');
+  _pwaInstallPrompt = null;
+}
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   _pwaInstallPrompt = e;
-  // Show install banner after 3 seconds if not already installed
-  setTimeout(() => {
-    const banner = document.getElementById('pwaBanner');
-    if (banner) banner.classList.add('show');
-  }, 3000);
+  setTimeout(showPwaBanner, 3000);
 });
 
 document.getElementById('pwaBannerInstall').addEventListener('click', async () => {
-  if (!_pwaInstallPrompt) return;
+  clearTimeout(_pwaDismissTimer);
+  if (!_pwaInstallPrompt) { dismissPwaBanner(); return; }
   _pwaInstallPrompt.prompt();
   const { outcome } = await _pwaInstallPrompt.userChoice;
-  _pwaInstallPrompt = null;
-  document.getElementById('pwaBanner').classList.remove('show');
+  dismissPwaBanner();
   if (outcome === 'accepted') toast('✓ AG Farmedge installed!');
 });
 
-document.getElementById('pwaBannerDismiss').addEventListener('click', () => {
-  document.getElementById('pwaBanner').classList.remove('show');
-  _pwaInstallPrompt = null;
-});
+document.getElementById('pwaBannerDismiss').addEventListener('click', dismissPwaBanner);
 
 // Hide install banner if already running as installed PWA
 if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
