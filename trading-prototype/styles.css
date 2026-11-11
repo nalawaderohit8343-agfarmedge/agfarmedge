@@ -67,3 +67,32 @@ dialog::backdrop{background:rgba(20,30,24,.45)}
 .dlg-btns{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1d2620;color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;z-index:20}
 @media(max-width:560px){.grid{grid-template-columns:1fr}main{padding:10px}}
+.calc .hist{margin-top:8px;border-top:1px solid var(--line);padding-top:6px}
+.calc .hist div{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:2px 0}
+.acts{flex-wrap:wrap}
+
+/* Printable documents (bill / slips) */
+#doc{position:fixed;inset:0;background:#e9ece8;z-index:30;overflow:auto;padding:16px}
+.doc-bar{max-width:720px;margin:0 auto 10px;display:flex;justify-content:flex-end;gap:8px}
+.doc-page{max-width:720px;margin:0 auto;background:#fff;border:1px solid var(--line);padding:28px;color:#000}
+.doc-page h1{font-size:20px}.doc-page h2{font-size:16px;margin:16px 0 8px;text-transform:uppercase;letter-spacing:.05em}
+.doc-top{display:flex;justify-content:space-between;gap:16px;border-bottom:2px solid #000;padding-bottom:10px}
+.doc-page table{margin:8px 0}.doc-page td,.doc-page th{white-space:normal}
+.doc-note{margin-top:22px;font-size:12px;color:#555;border-top:1px solid var(--line);padding-top:8px}
+.doc-sign{display:flex;justify-content:space-between;margin-top:50px;font-size:13px}
+@media print{body>*:not(#doc){display:none!important}#doc{position:static;background:#fff;padding:0}.doc-bar{display:none}.doc-page{border:0;padding:0}}
+
+/* Phones: each table row becomes a card, no sideways scrolling */
+@media(max-width:640px){
+  #view thead,#view tfoot{display:none}
+  #view table,#view tbody{display:block}
+  #view tbody tr{display:block;border:1px solid var(--line);border-radius:8px;margin-bottom:10px;padding:4px 10px}
+  #view tbody td{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;white-space:normal;text-align:right;padding:6px 0;border-bottom:1px dashed var(--line)}
+  #view tbody td:last-child{border-bottom:0}
+  #view tbody td::before{content:attr(data-label);font-size:11px;text-transform:uppercase;color:var(--dim);text-align:left;flex-shrink:0;padding-top:2px}
+  #view tbody td[data-label=""]::before{content:none}
+  #view tbody td[data-label=""]{justify-content:flex-end}
+  .acts{justify-content:flex-end}
+  .btn.small{padding:6px 11px;font-size:13px}
+  .foot{flex-direction:column;align-items:flex-start}
+}

@@ -45,6 +45,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
+  // Trading prototype is a separate app: never cache it, so updates always show
+  if (url.pathname.includes('/trading-prototype/')) return;
+
   // Always go network-first for Firebase auth/database (real-time data)
   if (url.hostname.includes('firebase') || url.hostname.includes('googleapis.com/identitytoolkit')) {
     event.respondWith(

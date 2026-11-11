@@ -20,6 +20,7 @@
     <button data-tab="purchases">1 · Purchases</button>
     <button data-tab="transport">2 · Transport</button>
     <button data-tab="sales">3 · Sales</button>
+    <button data-tab="costs">Other costs</button>
     <button data-tab="money">Payments due</button>
   </nav>
 </header>
@@ -29,15 +30,20 @@
 <main id="view"></main>
 
 <footer class="foot">
-  <span>Prototype. Data is saved only in this browser. No login, no bank, no live prices.</span>
+  <span>Prototype. Data is saved only in this browser – download a backup often. No login, no bank, no live prices.</span>
   <span class="foot-actions">
     <label>USD rate (<b>simulated</b>, not live): ₹ <input id="fxInput" type="number" min="1" step="0.01"></label>
+    <button class="btn ghost small" data-act="company">Company details</button>
+    <button class="btn ghost small" data-act="backup">Download backup</button>
+    <button class="btn ghost small" data-act="restore">Restore backup</button>
+    <input id="restoreFile" type="file" accept=".json,application/json" hidden>
     <button class="btn ghost small" data-act="reset-sample">Reload sample data</button>
     <button class="btn ghost small" data-act="clear-all">Start empty</button>
   </span>
 </footer>
 
 <dialog id="dlg"><form id="dlgForm" method="dialog" novalidate></form></dialog>
+<div id="doc" hidden></div>
 <div id="toast" class="toast" hidden></div>
 
 <script src="app.js"></script>

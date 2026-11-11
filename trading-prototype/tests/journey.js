@@ -22,11 +22,11 @@ const URL = process.env.APP_URL || 'http://localhost:8080/';
 
   await page.goto(URL);
   assert.match(await text('#simBanner'), /SAMPLE DATA/);
-  assert.equal(await text('#kpiProfit'), '₹2,24,200');   // 42,000 + 1,63,200 + 19,000
+  assert.equal(await text('#kpiProfit'), '₹1,64,855');   // 32,280 + 1,18,700 + 13,875
   assert.equal(await text('#kpiFarmers'), '₹12,04,500');
   assert.equal(await text('#kpiTransport'), '₹88,000');
   assert.equal(await text('#kpiBuyers'), '₹7,41,200');
-  assert.equal(await text('#kpiOnion'), '170 qtl');
+  assert.equal(await text('#kpiOnion'), '165 qtl');
   step('sample data loads, labelled as simulated, dashboard totals correct');
 
   await page.click('[data-act=clear-all]');
@@ -91,31 +91,105 @@ const URL = process.env.APP_URL || 'http://localhost:8080/';
   await fill({ amount: 200000 });
   await save();
   await page.click('#dueFarmers [data-act=pay]');
-  await fill({ amount: 300000 });
+  await fill({ amount: 300000, date: '2026-11-05', note: 'UPI' });
   await save();
   assert.match(await text('#dueFarmers'), /All farmers are paid/);
   step('payments recorded');
 
-  // 5. Dashboard: sales 4,17,500 - cost 150 x 2000 - freight 30,000 = 87,500
+  // 4b. Payment history: see dated entries, remove one, pay again
+  await tab('purchases');
+  await page.click('tr[data-lot="O-001"] [data-act=pay]');
+  assert.match(await text('#dlgCalc'), /Paid at purchase[\s\S]*05-11-2026 · ₹3,00,000 · UPI/);
+  await page.click('[data-act=del-payment] >> nth=1');
+  assert.match(await text('#dlgCalc'), /balance ₹3,00,000/);
+  await save();                                            // pays the full balance again
+  assert.match(await text('tr[data-lot="O-001"]'), /Paid/);
+  step('payment history kept with dates; a wrong entry can be removed');
+
+  // 4c. Other costs and weight loss
+  await tab('costs');
+  await page.click('[data-act=new-cost]');
+  await fill({ type: 'Labour / loading', amount: 5000, note: 'Loading' });
+  await save();
+  assert.match(await text('tr[data-cost="X-001"]'), /O-001[\s\S]*₹5,000/);
+  await tab('purchases');
+  await page.click('tr[data-lot="O-001"] [data-act=edit-lot]');
+  await fill({ loss: 80 });
+  await save();
+  assert.match(await text('#dlgErr'), /cannot be more than the quantity bought/);
+  await fill({ loss: 10 });
+  await save();
+  assert.equal(await text('tr[data-lot="O-001"] .unsold'), '40 qtl');
+  step('other costs and weight loss recorded');
+
+  // 4d. Printable bill
+  await tab('sales');
+  await page.click('tr[data-sale="S-002"] [data-act=doc]');
+  assert.equal(await text('#docTitle'), 'EXPORT SALE BILL');
+  assert.equal(await text('#docTotal'), '₹1,57,500');
+  assert.match(await text('#doc'), /not a GST tax invoice/);
+  await page.emulateMedia({ media: 'print' });
+  assert.ok(await page.locator('#tabs').isHidden() && await page.locator('#docTotal').isVisible());
+  await page.emulateMedia({ media: null });
+  await page.click('[data-act=doc-close]');
+  step('printable sale bill opens; print shows only the bill');
+
+  // 5. Dashboard: sales 4,17,500 - cost (150 sold + 10 lost) x 2000 - freight 30,000 - costs 5,000 = 62,500
   await tab('dashboard');
-  assert.equal(await text('#kpiProfit'), '₹87,500');
+  assert.equal(await text('#kpiProfit'), '₹62,500');
   assert.equal(await text('#kpiFarmers'), '₹0');
   assert.equal(await text('#kpiTransport'), '₹30,000');
   assert.equal(await text('#kpiBuyers'), '₹1,57,500');
-  assert.equal(await text('#kpiOnion'), '50 qtl');
-  assert.match(await text('tr[data-lot="O-001"] .profit'), /₹87,500/);
+  assert.equal(await text('#kpiOnion'), '40 qtl');
+  assert.match(await text('tr[data-lot="O-001"] .profit'), /₹62,500/);
   step('dashboard shows correct profit, dues and stock');
 
   // 6. Data survives reload; linked lot cannot be deleted
   await page.reload();
-  assert.equal(await text('#kpiProfit'), '₹87,500');
+  assert.equal(await text('#kpiProfit'), '₹62,500');
   await tab('purchases');
   await page.click('[data-act=del-lot]');
   assert.match(await text('#toast'), /linked/);
   assert.equal(await page.locator('tr[data-lot="O-001"]').count(), 1);
   step('data kept after reload; lot with sales cannot be deleted');
 
+  // 7. Backup file -> wipe -> restore
+  const [dl] = await Promise.all([page.waitForEvent('download'), page.click('[data-act=backup]')]);
+  const file = await dl.path();
+  await page.click('[data-act=clear-all]');
+  await tab('dashboard');
+  assert.equal(await text('#kpiProfit'), '₹0');
+  await page.setInputFiles('#restoreFile', file);
+  await page.waitForFunction(() => document.querySelector('#kpiProfit').innerText === '₹62,500');
+  step('backup downloaded and restored');
+
+  // 8. Data saved by the older version (no payment history) still opens
+  await page.evaluate(() => localStorage.setItem('agfg-trading-prototype-v1', JSON.stringify({ sample: false, fx: 88, seq: { lot: 1, trip: 0, sale: 0 },
+    lots: [{ id: 'C-001', date: '2026-11-01', commodity: 'Cotton', farmer: 'Old', village: 'V', qty: 10, rate: 7000, paid: 20000 }], trips: [], sales: [] })));
+  await page.reload();
+  assert.equal(await text('#kpiFarmers'), '₹50,000');
+  step('older saved data is upgraded');
+
+  // 9. Names from the main AG Farmedge app are suggested
+  await page.evaluate(() => localStorage.setItem('agfarmedge_v2', JSON.stringify({ farmers: [{ id: 1, name: 'Main App Farmer', village: 'Solapur' }], traders: [] })));
+  await tab('purchases');
+  await page.click('[data-act=new-lot]');
+  assert.equal(await page.locator('#f_farmer_list option[value="Main App Farmer"]').count(), 1);
+  await page.click('[data-act=dlg-cancel]');
+  step('farmer names from the main app are suggested');
+
   await page.click('[data-act=reset-sample]');
+
+  // 10. Phone: every tab fits the screen without sideways scrolling
+  await page.setViewportSize({ width: 390, height: 800 });
+  for (const t of ['dashboard', 'purchases', 'transport', 'sales', 'costs', 'money']) {
+    await tab(t);
+    const over = await page.evaluate(() => Math.max(document.documentElement.scrollWidth, ...[...document.querySelectorAll('#view .scroll')].map(e => e.scrollWidth - e.clientWidth + innerWidth)) - innerWidth);
+    assert.ok(over <= 0, `${t} overflows on phone by ${over}px`);
+  }
+  await page.screenshot({ path: (process.env.SHOT || 'dashboard.png').replace('.png', '-phone.png') });
+  step('phone layout: no sideways scrolling on any tab');
+  await page.setViewportSize({ width: 1280, height: 900 });
   await tab('dashboard');
   await page.screenshot({ path: process.env.SHOT || 'dashboard.png', fullPage: true });
   assert.deepEqual(errors, []);
