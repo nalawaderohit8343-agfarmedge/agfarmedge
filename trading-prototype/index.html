@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AG Farmedge Global – Trading Prototype</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="logo">🌿</span>
+    <div>
+      <div class="brand-name">AG Farmedge Global</div>
+      <div class="brand-sub">Cotton &amp; Onion Trading · Prototype</div>
+    </div>
+  </div>
+  <nav id="tabs" class="tabs">
+    <button data-tab="dashboard">Dashboard</button>
+    <button data-tab="purchases">1 · Purchases</button>
+    <button data-tab="transport">2 · Transport</button>
+    <button data-tab="sales">3 · Sales</button>
+    <button data-tab="money">Payments due</button>
+  </nav>
+</header>
+
+<div id="simBanner" class="banner"></div>
+
+<main id="view"></main>
+
+<footer class="foot">
+  <span>Prototype. Data is saved only in this browser. No login, no bank, no live prices.</span>
+  <span class="foot-actions">
+    <label>USD rate (<b>simulated</b>, not live): ₹ <input id="fxInput" type="number" min="1" step="0.01"></label>
+    <button class="btn ghost small" data-act="reset-sample">Reload sample data</button>
+    <button class="btn ghost small" data-act="clear-all">Start empty</button>
+  </span>
+</footer>
+
+<dialog id="dlg"><form id="dlgForm" method="dialog" novalidate></form></dialog>
+<div id="toast" class="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
