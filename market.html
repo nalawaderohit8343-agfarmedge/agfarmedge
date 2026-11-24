@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onion Market Selector</title>
+<meta name="theme-color" content="#6d1a36">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a trader's morning desk tool — direct, numeric, no decoration.
+   IDEA: the mandi patti (sale slip) turned around: price minus every deduction, back to Dhule.
+   PICTURE: the live verdict + a ranked margin bar for every market, large, at the top.
+   COLOUR and TYPE: onion-skin crimson field, papery bronze bars, white ground; Archivo + Inter.
+   LAYOUT: verdict band first, then section links, then prices, costs, ranking, trends, season, method. */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#140a0e);--ink:light-dark(#1d1115,#f4ebe7);--mut:light-dark(#6c5a60,#b7a6ab);--line:light-dark(#ecdfe2,#3a2830);--panel:light-dark(#fbf6f2,#1d1015);--onion:light-dark(#6d1a36,#4f1227);--gold:#f0c06a;--good:light-dark(#22764a,#58c48a);--thin:light-dark(#a06a10,#e3b24f);--bad:light-dark(#b3261e,#ff8a80);--acc:light-dark(#6d1a36,#e58aa8)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip;font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:Archivo,Inter,sans-serif;line-height:1.08;text-wrap:balance;margin:0}
+h2{font-size:clamp(24px,3.2vw,32px);margin-bottom:6px}h3{font-size:18px;margin:18px 0 6px}
+.band{padding:clamp(24px,4vw,56px) max(5vw,16px)}.wrap{max-width:1240px;margin:0 auto}
+.hero{background:var(--onion);color:#fff6f0}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(20px,4vw,56px);align-items:start}
+.kick{font-size:14px;opacity:.8;margin:0 0 8px}
+.best{font-size:clamp(34px,5.5vw,56px);font-weight:800;margin:0 0 14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 14px}
+.figs div{border-top:1px solid rgba(255,246,240,.3);padding-top:8px}
+.figs b{display:block;font:700 clamp(20px,2.6vw,28px)/1.1 Archivo,sans-serif;white-space:nowrap}
+.figs span{font-size:13px;opacity:.8}
+.note{font-size:14px;opacity:.9;margin:0}
+.bars{display:grid;gap:7px}
+.bar{display:grid;grid-template-columns:minmax(0,9em) minmax(0,1fr) 5.6em;gap:10px;align-items:center;font-size:14px}
+.bar .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .tr{height:20px;background:rgba(255,255,255,.1);border-radius:3px;position:relative}
+.bar .fl{position:absolute;left:0;top:0;bottom:0;background:var(--gold);border-radius:3px;transition:width .35s}
+.bar .fl.neg{background:#ff9d93}.bar .fl.loc{background:#d9c3b6}
+.bar .v{text-align:right;white-space:nowrap;font-weight:600}
+.bar.top .nm{font-weight:700}
+.bars-h{font-size:13px;opacity:.8;margin:0 0 8px;display:flex;justify-content:space-between}
+nav.scroll{display:flex;gap:6px;padding:10px max(5vw,16px);border-bottom:1px solid var(--line);background:var(--bg)}
+nav a{flex:none;padding:9px 14px;border-radius:99px;color:var(--ink);text-decoration:none;font-size:15px;border:1px solid var(--line)}
+nav a:hover{border-color:var(--acc)}
+@media(min-width:900px){nav.scroll{position:sticky;top:0;z-index:5}}
+.lead{color:var(--mut);margin:0 0 18px;max-width:70ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+label{display:grid;gap:4px;font-size:14px;color:var(--mut)}
+input,select,button{font:inherit;font-size:16px;color:var(--ink)}
+input,select{height:44px;padding:0 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+input[type=checkbox]{width:22px;height:22px;accent-color:var(--acc)}
+button{min-height:44px;padding:0 16px;border-radius:6px;border:1px solid var(--acc);background:var(--acc);color:#fff;font-weight:600;cursor:pointer}
+button.ghost{background:transparent;color:var(--acc)}button:disabled{opacity:.5}
+.acts{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0}
+.status{font-size:14px;color:var(--mut)}
+.flag{background:light-dark(#fff3d6,#3a2a0e);border-left:3px solid var(--thin);padding:8px 12px;font-size:14px;margin:0 0 14px;border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:13px;color:var(--mut);font-weight:500}
+td.n,th.n{text-align:right;white-space:nowrap}
+td input{height:40px}
+.pt td:nth-child(2) input,.pt td:nth-child(3) input{max-width:9em}
+.ct input{min-width:5.5em}.ct td:first-child input{min-width:11em}
+.x{background:none;border:0;color:var(--bad);min-height:40px;padding:0 8px;font-size:20px}
+.sig{font-weight:600;white-space:nowrap}.s-send{color:var(--good)}.s-thin{color:var(--thin)}.s-avoid{color:var(--bad)}
+.panel{background:var(--panel)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--bg)}
+.card b{font-family:Archivo,sans-serif}.card svg{width:100%;height:44px;display:block;margin:6px 0}
+.card small{color:var(--mut);display:block;font-size:13px}
+.heat{display:grid;grid-template-columns:minmax(12em,1.6fr) repeat(12,minmax(34px,1fr));gap:3px;font-size:13px;min-width:640px}
+.heat div{padding:7px 4px;text-align:center;border-radius:3px}.heat .rl{text-align:left;padding-left:0}
+.L{background:light-dark(#d9efe1,#173a26)}.M{background:light-dark(#f7e3b5,#4a3712)}.H{background:light-dark(#f2c2c9,#5a1b2a)}
+.heat .cur{outline:2px solid var(--acc)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(16px,3vw,40px)}
+ol,ul{padding-left:1.2em;margin:6px 0}li{margin:4px 0;max-width:70ch}
+.src a{color:var(--acc)}footer{font-size:13px;color:var(--mut)}
+textarea{width:100%;min-height:140px;font:14px/1.4 ui-monospace,monospace;display:none;margin-top:8px}
+.fig{position:relative;min-height:340px}.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+pre,.scroll{overflow-x:auto}.scroll a{flex:none}code{overflow-wrap:anywhere}html{scroll-padding-top:72px}
+@media(max-width:820px){.hero .wrap{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){table{font-size:13px}.figs{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.figs div:last-child{grid-column:1/-1}.bar{grid-template-columns:minmax(0,7.5em) minmax(0,1fr) 5em}}
+@media(prefers-reduced-motion:reduce){.bar .fl{transition:none}}
+</style>
+<style>
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;font-size:14px}
+.top a{color:#fff6f0;opacity:.85}
+.tag{font-size:12px;color:var(--mut);display:block;font-weight:400}
+.tag.feed{color:var(--good)}.tag.old{color:var(--thin)}
+</style>
+</head>
+<body>
+<section class="band hero" id="verdict"><div class="wrap">
+  <div>
+    <div class="top"><a href="./">← AG Farmedge</a><span id="feedTag"></span></div>
+    <p class="kick" id="kick">Dhule onion · today's dispatch</p>
+    <h1 class="best" id="best">Loading prices…</h1>
+    <div class="figs">
+      <div><b id="fMargin">—</b><span>margin per quintal</span></div>
+      <div><b id="fTruck">—</b><span>profit per truck</span></div>
+      <div><b id="fMax">—</b><span>max price to pay farmers</span></div>
+    </div>
+    <p class="note" id="vnote"></p>
+  </div>
+  <div>
+    <p class="bars-h"><span>Margin after all costs, ₹/qtl</span><span id="srcTag"></span></p>
+    <div class="bars" id="bars"></div>
+  </div>
+</div></section>
+
+<nav class="scroll" aria-label="Sections"><a href="#prices">Today's prices</a><a href="#costs">Costs</a><a href="#ranking">Ranking</a><a href="#trends">Trends</a><a href="#india">All India</a><a href="#season">Season</a></nav>
+
+<section class="band" id="prices"><div class="wrap">
+  <h2>Today's prices</h2>
+  <p class="lead">Prices fill in automatically from Agmarknet twice a day. Type over any number with your commission agent's rate — your entry wins for that day. Clear the box to go back to Agmarknet.</p>
+  <div class="flag" id="feedFlag" style="display:none"></div>
+  <div class="grid">
+    <label>Date<input type="date" id="date"></label>
+    <label>Onion type<select data-k="type"><option value="red">Fresh red (kharif / late kharif)</option><option value="summer">Stored summer (unhali)</option></select></label>
+    <label>Your farm-gate buying price, ₹/qtl<input type="number" inputmode="decimal" data-k="proc"></label>
+    <label>Local APMC price (Dhule / Lasalgaon), ₹/qtl<input type="number" inputmode="decimal" id="localP"><span class="tag" id="localTag"></span></label>
+  </div>
+  <table class="pt"><thead><tr><th>Market</th><th class="n">Modal ₹/qtl</th><th>Use</th></tr></thead><tbody id="ptBody"></tbody></table>
+  <div class="acts"><button id="reload">Refresh prices</button><button class="ghost" id="copySum">Copy WhatsApp summary</button><span class="status" id="status"></span></div>
+  <textarea id="copybox" aria-label="Copy this text"></textarea>
+</div></section>
+
+<section class="band panel" id="costs"><div class="wrap">
+  <h2>Costs and assumptions</h2>
+  <p class="lead">Saved on this phone. Freight starts as a rough placeholder (about ₹80 per km for a 25-tonne truck) — replace it with your transporter's quotes, and correct the rest from your sale bills every week.</p>
+  <div class="grid">
+    <label>Truck load, qtl<input type="number" data-k="truck"></label>
+    <label>Local costs: grading, bags, loading, ₹/qtl<input type="number" data-k="local"></label>
+    <label>Minimum margin you want, ₹/qtl<input type="number" data-k="minM"></label>
+    <label>Interest on money tied up, % a year<input type="number" data-k="cap"></label>
+    <label>Truck km per day<input type="number" data-k="kmDay"></label>
+    <label>Weight loss, fresh red, % per day<input type="number" step="0.1" data-k="shrinkRed"></label>
+    <label>Weight loss, stored summer, % per day<input type="number" step="0.1" data-k="shrinkSum"></label>
+    <label>Cost of selling locally, ₹/qtl<input type="number" data-k="localSell"></label>
+  </div>
+  <div class="scroll"><table class="ct"><thead><tr><th>Market</th><th class="n">Road km</th><th class="n">Freight ₹/truck</th><th class="n">Commission %</th><th class="n">Hamali ₹/qtl</th><th class="n">Payment days</th><th class="n">Reliability 1–5</th></tr></thead><tbody id="ctBody"></tbody></table></div>
+  <p class="status">To track a different mandi, edit <code>market-data/markets.json</code> in the repo; <code>markets-seen.json</code> lists the exact names Agmarknet uses.</p>
+</div></section>
+
+<section class="band" id="ranking"><div class="wrap">
+  <h2>Full ranking, ₹ per quintal bought</h2>
+  <p class="lead">Each row walks the sale value back to Dhule. "Other" is hamali, interest for the payment days and the reliability discount.</p>
+  <div class="scroll"><table><thead><tr><th>Market</th><th class="n">Today</th><th class="n">Expected on arrival</th><th class="n">Weight loss</th><th class="n">Commission</th><th class="n">Freight</th><th class="n">Other</th><th class="n">Net back</th><th class="n">Margin</th><th class="n">Per truck</th><th>Signal</th></tr></thead><tbody id="rkBody"></tbody></table></div>
+</div></section>
+
+<section class="band panel" id="trends"><div class="wrap">
+  <h2>Price trends</h2>
+  <p class="lead">Built from the daily Agmarknet history the robot saves. With three days or more for a market, the tool projects the price for the day your truck arrives.</p>
+  <div class="cards" id="cards"></div>
+</div></section>
+
+<section class="band" id="india"><div class="wrap">
+  <h2>All-India onion today</h2>
+  <p class="lead">Every mandi Agmarknet reported in the latest fetch, highest modal price first. Use it to spot markets worth adding.</p>
+  <label style="max-width:22em;margin-bottom:12px">Search state or market<input id="q" placeholder="e.g. Bihar, Siliguri"></label>
+  <div class="scroll"><table><thead><tr><th>Market</th><th>State</th><th>Variety</th><th>Date</th><th class="n">Min</th><th class="n">Modal</th><th class="n">Max</th></tr></thead><tbody id="inBody"></tbody></table></div>
+  <p class="status" id="inNote"></p>
+</div></section>
+
+<section class="band panel" id="season"><div class="wrap">
+  <h2>When each region competes with your onion</h2>
+  <p class="lead">Typical supply from other producing states by month. Green is the best window to send Dhule onion; red means local or nearby crops are flooding that region. A starting guide — confirm with your agents.</p>
+  <div class="scroll"><div class="heat" id="heat"></div></div>
+  <h3>Decision rules</h3>
+  <ul>
+    <li>Send only where the margin clears your minimum. If none does, buy less today or sell locally.</li>
+    <li>If the top two markets are within ₹75/qtl, choose the nearer or faster-paying one, or split trucks.</li>
+    <li>Keep any one market under about 40% of a week's trucks.</li>
+    <li>Agmarknet prices are often a day old and some mandis skip days — check today's rate with your agent before loading.</li>
+  </ul>
+  <footer>Prices: Agmarknet via data.gov.in. Distances, freight, commission and weight-loss defaults are rough starting values. Decision aid, not financial advice.</footer>
+</div></section>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>{const n=parseFloat(v);return isFinite(n)?n:0};
+const inr=n=>(n<0?'−':'')+'₹'+Math.round(Math.abs(n)).toLocaleString('en-IN');
+const clone=o=>JSON.parse(JSON.stringify(o));
+const MK=(id,n,km,comm,ham,cd,rel)=>({id,n,km,fr:Math.round(km*80/500)*500,comm,ham,cd,rel});
+const DEF={truck:250,local:150,minM:150,cap:12,kmDay:450,type:'red',shrinkRed:1,shrinkSum:0.5,proc:4200,localSell:60,markets:[
+ MK('delhi','Delhi (Azadpur)',1150,6,30,7,4),MK('lucknow','Lucknow',1200,6,30,7,3),MK('patna','Patna',1550,6,30,10,3),MK('kolkata','Kolkata',1650,6,30,10,4),
+ MK('siliguri','Siliguri',2100,6,35,12,3),MK('guwahati','Guwahati',2650,6,35,15,3),MK('bhub','Bhubaneswar',1350,6,30,10,3),MK('raipur','Raipur',780,6,25,7,4),
+ MK('hyd','Hyderabad (Bowenpally)',720,6,25,7,4),MK('blr','Bengaluru',1150,6,25,7,3),MK('chennai','Chennai (Koyambedu)',1350,6,30,10,3),MK('surat','Surat',250,6,25,5,4)]};
+const REG=[['North — Delhi, UP, Punjab','HMMHHMLLLLHH'],['East — Kolkata, Bihar, Odisha','LLMHHMLLLLLL'],['North-East — Guwahati, Siliguri','LLLMMMLLLLLL'],['South — Bengaluru, Chennai, Hyderabad','MLLLLLMHHHHM'],['West & Central — Gujarat, MP, Mumbai','HHHHHMLLLLMM']];
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const now=new Date();const TODAY=new Date(now-now.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const SK='agf_market_settings',OK='agf_market_override_';
+let S=Object.assign(clone(DEF),LS.get(SK,{}));
+for(const d of DEF.markets)if(!S.markets.find(m=>m.id===d.id))S.markets.push(clone(d));
+let FEED=null,HIST={},date=TODAY,OV={},last=[];
+const status=t=>{$('#status').textContent=t};
+const dayDiff=(a,b)=>(Date.parse(b)-Date.parse(a))/864e5;
+const fmtD=d=>new Date(d+'T00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+
+function feedPrice(id){ // Agmarknet modal for the chosen date: that day's history, else latest feed if within 4 days
+ const h=HIST[date]&&HIST[date][id];if(h)return{p:num(h.modal),d:date};
+ if(date===TODAY&&FEED){const w=id==='local'?FEED.local:FEED.watch&&FEED.watch[id];if(w&&dayDiff(w.date,TODAY)<=4)return{p:num(w.modal),d:w.date}}
+ return null}
+function priceOf(id){const o=OV[id];if(o&&num(o.p)>0)return{p:num(o.p),src:'manual'};const f=feedPrice(id);return f?{p:f.p,src:'feed',d:f.d}:{p:0,src:'none'}}
+const used=id=>!(OV[id]&&OV[id].off);
+
+function trend(id){
+ const pts=Object.keys(HIST).filter(d=>d<date&&HIST[d][id]&&num(HIST[d][id].modal)>0).sort().slice(-7).map(d=>({d,p:num(HIST[d][id].modal)}));
+ const t=priceOf(id);if(t.p>0)pts.push({d:date,p:t.p});
+ let slope=null,vol=null,chg=null;
+ if(pts.length>=3){const xs=pts.map(x=>dayDiff(pts[0].d,x.d)),ys=pts.map(x=>x.p),n=xs.length,mx=xs.reduce((a,b)=>a+b)/n,my=ys.reduce((a,b)=>a+b)/n;
+  let sxy=0,sxx=0;for(let i=0;i<n;i++){sxy+=(xs[i]-mx)*(ys[i]-my);sxx+=(xs[i]-mx)**2}slope=sxx?sxy/sxx:0;
+  const r=[];for(let i=1;i<n;i++)r.push(ys[i]/ys[i-1]-1);const mr=r.reduce((a,b)=>a+b,0)/r.length;vol=Math.sqrt(r.reduce((a,b)=>a+(b-mr)**2,0)/r.length)*100;chg=(ys[n-1]/ys[0]-1)*100}
+ const series=Object.keys(HIST).sort().filter(d=>HIST[d][id]&&num(HIST[d][id].modal)>0).slice(-30).map(d=>num(HIST[d][id].modal));
+ return{slope,vol,chg,series}}
+
+function calc(){
+ const sh=num(S.type==='red'?S.shrinkRed:S.shrinkSum)/100,truck=Math.max(1,num(S.truck)),out=[];
+ for(const m of S.markets){const p=priceOf(m.id).p;if(!p||!used(m.id))continue;
+  const t=trend(m.id),days=num(m.km)/Math.max(100,num(S.kmDay));let exp=p;
+  if(t.slope!=null)exp=p+Math.max(-.15*p,Math.min(.15*p,.5*t.slope*days));
+  const shrink=Math.min(.3,sh*days),gross=exp*(1-shrink),comm=gross*num(m.comm)/100,fr=num(m.fr)/truck;
+  const other=num(m.ham)+gross*num(S.cap)/100*num(m.cd)/365+gross*Math.max(0,5-num(m.rel))/100,net=gross-comm-fr-other,margin=net-num(S.proc)-num(S.local);
+  out.push({id:m.id,n:m.n,p,exp,days,wl:exp*shrink,comm,fr,other,net,margin,truckP:margin*truck,maxBuy:net-num(S.local)-num(S.minM)})}
+ const lp=priceOf('local').p;
+ if(lp>0){const net=lp-num(S.localSell),margin=net-num(S.proc)-num(S.local);
+  out.push({id:'local',n:'Sell locally (APMC)',local:true,p:lp,exp:lp,days:0,wl:0,comm:0,fr:0,other:num(S.localSell),net,margin,truckP:margin*truck,maxBuy:net-num(S.local)-num(S.minM)})}
+ return out.sort((a,b)=>b.margin-a.margin)}
+const sig=x=>x.local?['Sell local','s-send']:x.margin>=num(S.minM)?['Send','s-send']:x.margin>=0?['Thin','s-thin']:['Avoid','s-avoid'];
+
+function update(){
+ const R=calc();last=R;const b=R[0];
+ $('#kick').textContent='Dhule onion · '+new Date(date+'T00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+ const nf=S.markets.filter(m=>priceOf(m.id).src==='feed').length,nm=S.markets.filter(m=>priceOf(m.id).src==='manual').length;
+ $('#srcTag').textContent=nf+' from Agmarknet'+(nm?' · '+nm+' yours':'');
+ if(!b){$('#best').textContent='No prices yet';['#fMargin','#fTruck','#fMax'].forEach(s=>$(s).textContent='—');$('#vnote').textContent='Enter today\'s rates below, or wait for the next Agmarknet fetch.';$('#bars').innerHTML='';$('#rkBody').innerHTML='';return}
+ $('#best').textContent=b.margin<0?'Hold — no market pays':b.local?'Sell locally today':b.n;
+ $('#fMargin').textContent=inr(b.margin);$('#fTruck').textContent=inr(b.truckP);$('#fMax').textContent=inr(b.maxBuy);
+ let note=b.margin<0?'Every option loses money at your buying price. Buy less, or buy only below the maximum price shown.':b.margin<num(S.minM)?'Best margin is below your minimum of '+inr(num(S.minM))+'/qtl. Bid lower or send only part of a load.':'Clears your minimum margin. Transit about '+(b.days?b.days.toFixed(1)+' days.':'same day.');
+ if(R[1]&&b.margin>=0&&b.margin-R[1].margin<75)note+=' Close call with '+R[1].n+' ('+inr(b.margin-R[1].margin)+' gap): choose the nearer or faster-paying one, or split trucks.';
+ const pb=priceOf(b.id);if(pb.src==='feed'&&pb.d!==TODAY)note+=' Price is Agmarknet '+fmtD(pb.d)+' — confirm today\'s rate with your agent.';
+ $('#vnote').textContent=note;
+ const mx=Math.max(1,...R.map(x=>Math.abs(x.margin)));
+ $('#bars').innerHTML=R.map((x,i)=>`<div class="bar${i===0?' top':''}"><span class="nm">${esc(x.n)}</span><span class="tr"><span class="fl${x.margin<0?' neg':''}${x.local?' loc':''}" style="width:${Math.max(2,Math.abs(x.margin)/mx*100).toFixed(1)}%"></span></span><span class="v">${inr(x.margin)}</span></div>`).join('');
+ $('#rkBody').innerHTML=R.map(x=>{const[s,c]=sig(x);return `<tr><td>${esc(x.n)}</td><td class="n">${inr(x.p)}</td><td class="n">${inr(x.exp)}</td><td class="n">${inr(x.wl)}</td><td class="n">${inr(x.comm)}</td><td class="n">${inr(x.fr)}</td><td class="n">${inr(x.other)}</td><td class="n">${inr(x.net)}</td><td class="n"><b>${inr(x.margin)}</b></td><td class="n">${inr(x.truckP)}</td><td class="sig ${c}">${s}</td></tr>`}).join('');
+}
+
+const tagFor=id=>{const f=feedPrice(id),o=OV[id]&&num(OV[id].p)>0;
+ if(o)return`<span class="tag">your rate${f?' · Agmarknet '+inr(f.p):''}</span>`;
+ if(f)return`<span class="tag ${f.d===date?'feed':'old'}">Agmarknet ${fmtD(f.d)}</span>`;return'<span class="tag old">no Agmarknet data — enter rate</span>'};
+function renderPrices(){
+ $('#date').value=date;
+ $('#ptBody').innerHTML=S.markets.map(m=>{const o=OV[m.id]||{},f=feedPrice(m.id);return `<tr><td>${esc(m.n)}<span id="tg-${esc(m.id)}">${tagFor(m.id)}</span></td><td class="n"><input type="number" inputmode="decimal" aria-label="${esc(m.n)} price" data-pm="${esc(m.id)}" value="${num(o.p)>0?num(o.p):''}" placeholder="${f?Math.round(f.p):''}"></td><td><input type="checkbox" aria-label="Use ${esc(m.n)}" data-on="${esc(m.id)}"${used(m.id)?' checked':''}></td></tr>`}).join('');
+ const lf=feedPrice('local'),lo=OV.local&&num(OV.local.p)>0;
+ $('#localP').value=lo?num(OV.local.p):'';$('#localP').placeholder=lf?Math.round(lf.p):'';
+ $('#localTag').textContent=lo?'your rate':lf?'Agmarknet '+fmtD(lf.d)+(FEED&&FEED.local?' · '+FEED.local.markets.join(', '):''):'no Agmarknet data';
+}
+function renderCosts(){
+ document.querySelectorAll('[data-k]').forEach(el=>{el.value=S[el.dataset.k]});
+ const f=(m,k,st)=>`<td class="n"><input type="number"${st?` step="${st}"`:''} aria-label="${esc(m.n)} ${k}" data-cm="${esc(m.id)}" data-f="${k}" value="${num(m[k])}"></td>`;
+ $('#ctBody').innerHTML=S.markets.map(m=>`<tr><td>${esc(m.n)}</td>${f(m,'km')}${f(m,'fr')}${f(m,'comm','0.5')}${f(m,'ham')}${f(m,'cd')}${f(m,'rel')}</tr>`).join('');
+}
+function renderTrends(){
+ $('#cards').innerHTML=S.markets.map(m=>{const t=trend(m.id),s=t.series;let svg='<svg viewBox="0 0 120 42"></svg>';
+  if(s.length>=2){const lo=Math.min(...s),hi=Math.max(...s),rg=hi-lo||1;svg=`<svg viewBox="0 0 120 42" preserveAspectRatio="none" aria-hidden="true"><polyline points="${s.map((v,i)=>`${(i/(s.length-1)*120).toFixed(1)},${(40-(v-lo)/rg*36).toFixed(1)}`).join(' ')}" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`}
+  const read=t.slope==null?'Needs 3 days':t.slope>15?'Rising':t.slope<-15?'Falling':'Steady';
+  return `<div class="card"><b>${esc(m.n)}</b> <span class="${t.slope>15?'s-send':t.slope<-15?'s-avoid':''}" style="float:right;font-weight:600">${read}</span>${svg}<small>${t.slope==null?s.length+' day'+(s.length===1?'':'s')+' of data':`${t.slope>=0?'+':'−'}₹${Math.abs(Math.round(t.slope))}/qtl a day · ${t.chg>=0?'+':''}${t.chg.toFixed(1)}% over the window · swings ±${t.vol.toFixed(1)}% a day`}</small></div>`}).join('')}
+function renderIndia(){
+ const recs=(FEED&&Array.isArray(FEED.records))?FEED.records:[];const q=$('#q').value.trim().toLowerCase();
+ const rows=recs.filter(r=>!q||(r.state+' '+r.market+' '+r.district).toLowerCase().includes(q)).sort((a,b)=>num(b.modal_price)-num(a.modal_price));
+ $('#inBody').innerHTML=rows.slice(0,60).map(r=>`<tr><td>${esc(r.market)}</td><td>${esc(r.state)}</td><td>${esc(r.variety)}</td><td>${esc(fmtD(r.arrival_date))}</td><td class="n">${inr(num(r.min_price))}</td><td class="n"><b>${inr(num(r.modal_price))}</b></td><td class="n">${inr(num(r.max_price))}</td></tr>`).join('');
+ $('#inNote').textContent=recs.length?`Showing ${Math.min(60,rows.length)} of ${rows.length} matching records (${recs.length} in the latest fetch).`:'No Agmarknet data loaded yet.'}
+function renderHeat(){const cm=now.getMonth();
+ $('#heat').innerHTML='<div class="rl"></div>'+MON.map((m,i)=>`<div${i===cm?' class="cur"':''}>${m}</div>`).join('')+REG.map(([n,c])=>`<div class="rl">${n}</div>`+[...c].map((v,i)=>`<div class="${v}${i===cm?' cur':''}">${v}</div>`).join('')).join('')}
+function renderAll(){renderPrices();renderCosts();renderTrends();renderIndia();update()}
+
+const saveS=()=>LS.set(SK,S),saveOV=()=>LS.set(OK+date,OV);
+function onEdit(e){const el=e.target,d=el.dataset;
+ if(el.id==='date'){if(!el.value)return;date=el.value;OV=LS.get(OK+date,{});renderPrices();renderTrends();update();return}
+ if(el.id==='q'){renderIndia();return}
+ if(el.id==='localP'){(OV.local=OV.local||{}).p=num(el.value);saveOV();$('#localTag').textContent=num(el.value)>0?'your rate':'Agmarknet';}
+ else if(d.k){S[d.k]=el.tagName==='SELECT'?el.value:num(el.value);saveS()}
+ else if(d.pm){(OV[d.pm]=OV[d.pm]||{}).p=num(el.value);saveOV();const t=document.getElementById('tg-'+d.pm);if(t)t.innerHTML=tagFor(d.pm)}
+ else if(d.on){(OV[d.on]=OV[d.on]||{}).off=!el.checked;saveOV()}
+ else if(d.cm){const m=S.markets.find(x=>x.id===d.cm);if(!m)return;m[d.f]=num(el.value);saveS()}
+ else return;
+ update()}
+document.addEventListener('input',onEdit);document.addEventListener('change',onEdit);
+
+function copyText(t){const box=$('#copybox');const show=()=>{box.style.display='block';box.value=t;box.focus();box.select();status('Select all and copy from the box below')};
+ try{navigator.clipboard.writeText(t).then(()=>{box.style.display='none';status('Copied')},show)}catch(e){show()}}
+$('#copySum').addEventListener('click',()=>{const R=last;if(!R.length)return;const b=R[0];
+ copyText(['Onion dispatch plan '+date,'Best: '+b.n+' — '+inr(b.margin)+'/qtl, '+inr(b.truckP)+' per truck','Max farm-gate price today: '+inr(b.maxBuy)+'/qtl','',...R.slice(0,6).map((x,i)=>(i+1)+'. '+x.n+': '+inr(x.margin)+'/qtl ('+sig(x)[0]+')')].join('\n'))});
+
+async function load(){status('Loading Agmarknet prices…');
+ try{const [a,b]=await Promise.all(['market-data/onion/latest.json','market-data/onion/watch-history.json'].map(u=>fetch(u+'?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)));
+  try{const mj=await fetch('market-data/markets.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null);
+   for(const m of (mj&&Array.isArray(mj.markets)?mj.markets:[]))if(m&&typeof m.id==='string'&&!S.markets.find(x=>x.id===m.id)){S.markets.push(MK(m.id,String(m.name||m.id),num(m.km)||1000,6,30,7,3));saveS()}}catch(e){}
+  FEED=a&&typeof a==='object'?a:null;HIST=b&&b.days&&typeof b.days==='object'?b.days:{};
+  if(FEED){const ft=String(FEED.fetched_at||'');$('#feedTag').textContent='Agmarknet fetched '+(ft?new Date(ft).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}):'—');
+   const age=ft?(Date.now()-Date.parse(ft))/36e5:99;$('#feedFlag').style.display=age>30?'':'none';$('#feedFlag').textContent='The last Agmarknet fetch is over a day old — check the Actions tab in GitHub, or enter today\'s rates by hand.';status(Object.keys(FEED.watch||{}).length+' of '+S.markets.length+' markets have Agmarknet prices')}
+  else{$('#feedFlag').style.display='';$('#feedFlag').textContent='No Agmarknet data yet. Once the API key is added and the robot has run, prices appear here. Until then, enter rates by hand.';status('')}
+ }catch(e){status('Could not load prices — enter rates by hand')}
+ renderAll()}
+$('#reload').addEventListener('click',load);
+OV=LS.get(OK+date,{});renderHeat();renderAll();load();
+}
+</script>
+</body>
+</html>

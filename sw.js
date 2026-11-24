@@ -1,7 +1,7 @@
 // AG Farmedge Global — Service Worker
 // Cache-first strategy: app loads instantly offline after first visit
 
-const CACHE_NAME = 'agfarmedge-v8';
+const CACHE_NAME = 'agfarmedge-v9';
 const CACHE_URLS = [
   './',
   './index.html',
@@ -49,6 +49,20 @@ self.addEventListener('fetch', (event) => {
   if (url.hostname.includes('firebase') || url.hostname.includes('googleapis.com/identitytoolkit')) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Network-first for daily market prices and the market page, so new prices show up
+  if (url.pathname.includes('/market-data/') || url.pathname.endsWith('/market.html')) {
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        if (response && response.status === 200 && event.request.method === 'GET') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => caches.match(event.request, { ignoreSearch: true }))
     );
     return;
   }

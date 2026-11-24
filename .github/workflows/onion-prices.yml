@@ -1,0 +1,43 @@
+name: Daily onion prices
+
+on:
+  schedule:
+    - cron: "40 5 * * *"   # 11:10 IST — morning Agmarknet update
+    - cron: "40 12 * * *"  # 18:10 IST — evening top-up for late-reporting mandis
+  workflow_dispatch: {}      # "Run workflow" button for a manual fetch
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onion-prices
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch Agmarknet onion prices
+        env:
+          DATA_GOV_IN_KEY: ${{ secrets.DATA_GOV_IN_KEY }}
+        run: python scripts/fetch_onion_prices.py
+
+      - name: Commit updated data
+        run: |
+          git config user.name "onion-price-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add market-data
+          if git diff --cached --quiet; then
+            echo "No price changes."
+          else
+            git commit -m "Onion prices $(TZ=Asia/Kolkata date +%Y-%m-%d\ %H:%M) IST"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push
+          fi
