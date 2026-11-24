@@ -1,0 +1,18 @@
+{
+  "_help": "Markets the selector tracks. 'state' must match Agmarknet's state name. A record counts for a market when its market OR district name contains any 'match' text (case-insensitive). Check market-data/onion/markets-seen.json to see the exact names Agmarknet uses, then edit 'match' here.",
+  "markets": [
+    {"id": "delhi",    "name": "Delhi (Azadpur)",        "state": "NCT of Delhi",   "match": ["azadpur"]},
+    {"id": "lucknow",  "name": "Lucknow",                "state": "Uttar Pradesh",  "match": ["lucknow"]},
+    {"id": "patna",    "name": "Patna",                  "state": "Bihar",          "match": ["patna"]},
+    {"id": "kolkata",  "name": "Kolkata",                "state": "West Bengal",    "match": ["kolkata", "bara bazar", "posta"]},
+    {"id": "siliguri", "name": "Siliguri",               "state": "West Bengal",    "match": ["siliguri"]},
+    {"id": "guwahati", "name": "Guwahati",               "state": "Assam",          "match": ["guwahati", "kamrup"]},
+    {"id": "bhub",     "name": "Bhubaneswar",            "state": "Odisha",         "match": ["bhubaneswar", "khurda", "khordha"]},
+    {"id": "raipur",   "name": "Raipur",                 "state": "Chhattisgarh",   "match": ["raipur"]},
+    {"id": "hyd",      "name": "Hyderabad (Bowenpally)", "state": "Telangana",      "match": ["bowenpally", "gudimalkapur", "hyderabad"]},
+    {"id": "blr",      "name": "Bengaluru",              "state": "Karnataka",      "match": ["bangalore", "bengaluru"]},
+    {"id": "chennai",  "name": "Chennai (Koyambedu)",    "state": "Tamil Nadu",     "match": ["koyambedu", "chennai"]},
+    {"id": "surat",    "name": "Surat",                  "state": "Gujarat",        "match": ["surat"]}
+  ],
+  "local": {"state": "Maharashtra", "match": ["dhule", "lasalgaon", "pimpalgaon", "sakri", "pimpalner"]}
+}
